@@ -289,17 +289,22 @@ module Octopus
 
     def method_missing(method, *args, &block)
       if should_clean_connection_proxy?(method)
+        Rails.logger.info "Octopus::Proxy#method_missing(#{method}) => should_clean_connection_proxy"
         conn = select_connection
         self.last_current_shard = current_shard
         clean_connection_proxy
         conn.send(method, *args, &block)
       elsif should_send_queries_to_shard_slave_group?(method)
+        Rails.logger.info "Octopus::Proxy#method_missing(#{method}) => should_send_queries_to_shard_slave_group"
         send_queries_to_shard_slave_group(method, *args, &block)
       elsif should_send_queries_to_slave_group?(method)
+        Rails.logger.info "Octopus::Proxy#method_missing(#{method}) => should_send_queries_to_slave_group"
         send_queries_to_slave_group(method, *args, &block)
       elsif should_send_queries_to_replicated_databases?(method)
+        Rails.logger.info "Octopus::Proxy#method_missing(#{method}) => should_send_queries_to_replicated_databases"
         send_queries_to_selected_slave(method, *args, &block)
       else
+        Rails.logger.info "Octopus::Proxy#method_missing(#{method}) => select_connection"
         select_connection.send(method, *args, &block)
       end
     end
